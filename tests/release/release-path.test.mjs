@@ -239,6 +239,10 @@ test("musl release addons are built with a musl host and loaded before upload", 
   assert.match(build, /scripts\/build-parser-native\.ts/u);
   assert.match(build, /--target "\$TARGET"/u);
   assert.match(build, /--target-dir target\/parser-musl/u);
+  assert.match(build, /--env BUILDER_ID="\$\(id -u\):\$\(id -g\)"/u);
+  assert.match(build, /apk add --no-cache nodejs su-exec/u);
+  assert.match(build, /su-exec "\$BUILDER_ID" node --experimental-strip-types/u);
+  assert.match(build, /su-exec "\$BUILDER_ID" cp/u);
   const probe = native.steps.find(
     (entry) => entry.name === "Verify and load the musl parser addon on Alpine",
   ).run;

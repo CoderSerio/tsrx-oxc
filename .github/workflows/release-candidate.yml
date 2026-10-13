@@ -188,16 +188,17 @@ jobs:
             --mount "type=bind,src=$HOME/.cargo/git,dst=/usr/local/cargo/git" \
             --workdir /workspace \
             --env TARGET --env PACKAGE_SUFFIX \
+            --env BUILDER_ID="$(id -u):$(id -g)" \
             --env RUSTUP_TOOLCHAIN=1.96.0 \
             --env CARGO_TARGET_DIR=/workspace/target/parser-musl \
             rust:1.96.0-alpine3.22 sh -ec '
-              apk add --no-cache nodejs
-              node --experimental-strip-types scripts/build-parser-native.ts \
+              apk add --no-cache nodejs su-exec
+              su-exec "$BUILDER_ID" node --experimental-strip-types scripts/build-parser-native.ts \
                 --target "$TARGET" \
                 --target-dir target/parser-musl \
                 --out release/addon/parser.node \
                 --record "release/addon/parser-addon-$PACKAGE_SUFFIX.json"
-              cp "release/addon/parser-addon-$PACKAGE_SUFFIX.json" release/addon/parser.node.json
+              su-exec "$BUILDER_ID" cp "release/addon/parser-addon-$PACKAGE_SUFFIX.json" release/addon/parser.node.json
             '
 
       - name: Smoke the companion CLIs on this host
